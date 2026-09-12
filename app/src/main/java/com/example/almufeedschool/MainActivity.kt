@@ -1,8 +1,5 @@
 package com.example.almufeedschool
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.View
 import android.webkit.WebChromeClient
@@ -21,16 +18,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        webView = findViewById(R.id.webView)
-        offlineLayout = findViewById(R.id.offlineLayout)
-        btnRetry = findViewById(R.id.btnRetry)
+        try {
+            webView = findViewById(R.id.webView)
+            offlineLayout = findViewById(R.id.offlineLayout)
+            btnRetry = findViewById(R.id.btnRetry)
 
-        setupWebView()
-        checkConnectionAndLoad()
+            setupWebView()
+            loadWebsite()
 
-        // زر إعادة المحاولة عند انقطاع الإنترنت
-        btnRetry.setOnClickListener {
-            checkConnectionAndLoad()
+            btnRetry.setOnClickListener {
+                loadWebsite()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -39,20 +39,16 @@ class MainActivity : AppCompatActivity() {
             javaScriptEnabled = true
             domStorageEnabled = true
             databaseEnabled = true
-            
-            // ضبط العرض للشاشات لتناسب الجداول
             loadWithOverviewMode = true
             useWideViewPort = true
-            
-            // تفعيل التكبير والتصغير لرؤية الجداول والعروض بشكل كامل
             setSupportZoom(true)
             builtInZoomControls = true
             displayZoomControls = false
         }
 
-        // دعم الإشعارات، الرسائل، والتنبيهات الخاصة بالموقع
         webView.webChromeClient = WebChromeClient()
 
+        // WebViewClient آمن يتعامل مع حالة فشل الاتصال بدقة بدون أن ينهار التطبيق
         webView.webViewClient = object : WebViewClient() {
             override fun onReceivedError(
                 view: WebView?,
@@ -66,14 +62,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkConnectionAndLoad() {
-        if (isNetworkAvailable(this)) {
-            offlineLayout.visibility = View.GONE
-            webView.visibility = View.VISIBLE
-            webView.loadUrl("https://mufeed-school.web.app")
-        } else {
-            showOfflineScreen()
-        }
+    private fun loadWebsite() {
+        offlineLayout.visibility = View.GONE
+        webView.visibility = View.VISIBLE
+        webView.loadUrl("https://mufeed-school.web.app")
     }
 
     private fun showOfflineScreen() {
@@ -81,14 +73,6 @@ class MainActivity : AppCompatActivity() {
         offlineLayout.visibility = View.VISIBLE
     }
 
-    private fun isNetworkAvailable(context: Context): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = connectivityManager.activeNetwork ?: return false
-        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-    }
-
-    // دعم زر الرجوع في الهاتف للتنقل داخل صفحات الموقع بسلاسة
     override fun onBackPressed() {
         if (webView.canGoBack()) {
             webView.goBack()
