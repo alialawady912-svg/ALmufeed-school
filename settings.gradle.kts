@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AlMufeed school"
+rootProject.name = "AlMufeed-school"
 include(":app")
